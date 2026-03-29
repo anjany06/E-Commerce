@@ -15,7 +15,8 @@ const createToken = (id) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await userModel.findOne({ email });
+    // BUG: No input validation - email and password not checked if empty
+    const user = await userModel.findOne({ email }); // BUG: No sanitization of email input
 
     // Check if user exists
     if (!user) {
@@ -136,7 +137,7 @@ export const sendResetOtp = async (req, res) => {
       text: `Your OTP for reset password is ${otp}. Use this OTP to proceed with resetting your password.`,
       html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(
         "{{email}}",
-        user.email
+        user.email,
       ),
     };
 
@@ -209,7 +210,7 @@ export const sendVerifyOtp = async (req, res) => {
       // text: `Your OTP is ${otp}. Verify your account using this OTP.`,
       html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace(
         "{{email}}",
-        user.email
+        user.email,
       ),
     };
 

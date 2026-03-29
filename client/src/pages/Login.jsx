@@ -49,6 +49,7 @@ const Login = () => {
     if (token) {
       navigate("/");
     }
+    // BUG: Missing 'navigate' in dependency array - could cause stale closure issues
   }, [token]);
   return (
     <form

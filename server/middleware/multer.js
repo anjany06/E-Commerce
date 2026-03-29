@@ -1,11 +1,15 @@
 import multer, { diskStorage } from "multer";
 
 const storage = diskStorage({
-  filename:function(req, file, callback){
-    callback(null, file.originalname)
-  }
-})
+  // BUG: Missing destination path - files might be saved in wrong location
+  filename: function (req, file, callback) {
+    // BUG: Using original filename - security risk, could allow directory traversal
+    callback(null, file.originalname);
+  },
+});
 
-const upload = multer({storage})
+// BUG: No file size limits - allows unlimited file uploads (DoS vulnerability)
+// BUG: No file type validation
+const upload = multer({ storage });
 
 export default upload;

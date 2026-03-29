@@ -36,17 +36,17 @@ const Collection = () => {
 
     if (showSearch && search) {
       productsCopy = productsCopy.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.name.toLowerCase().includes(search.toLowerCase()),
       );
     }
     if (category.length > 0) {
       productsCopy = productsCopy.filter((item) =>
-        category.includes(item.category)
+        category.includes(item.category),
       );
     }
     if (subCategory.length > 0) {
       productsCopy = productsCopy.filter((item) =>
-        subCategory.includes(item.subCategory)
+        subCategory.includes(item.subCategory),
       );
     }
     setFilterProducts(productsCopy);
@@ -55,6 +55,8 @@ const Collection = () => {
   const sortProduct = () => {
     // copy of filter products..
     let fpCopy = filterProducts.slice();
+    // BUG: Sort is mutating state directly - should create new array
+    // BUG: Default case calls applyFilter() but doesn't set loading state properly
 
     switch (sortType) {
       case "low-high":

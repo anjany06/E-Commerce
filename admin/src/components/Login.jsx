@@ -10,6 +10,8 @@ const Login = ({ setToken }) => {
   const onSubmitHandler = async (e) => {
     try {
       e.preventDefault();
+      // BUG: No validation of email/password format before sending
+      // BUG: If both are empty, request is still sent to server
       const response = await axios.post(backendUrl + "/api/user/admin", {
         email,
         password,

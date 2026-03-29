@@ -15,6 +15,7 @@ const Home = () => {
     if (products.length > 0) {
       setLoading(false);
     }
+    // BUG: Loading state never resets to true, if products become empty later it stays false
   }, [products]);
 
   if (loading) {

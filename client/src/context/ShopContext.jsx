@@ -68,7 +68,7 @@ const ShopContextProvider = (props) => {
           const response = await axios.post(
             `${backendUrl}/api/cart/add`,
             { itemId, size },
-            { headers: { token } }
+            { headers: { token } },
           );
           if (response.data.success) {
             toast.success(response.data.message);
@@ -105,7 +105,7 @@ const ShopContextProvider = (props) => {
         await axios.post(
           `${backendUrl}/api/cart/update`,
           { itemId, size, quantity },
-          { headers: { token } }
+          { headers: { token } },
         );
       } catch (error) {
         console.error(error);
@@ -121,9 +121,9 @@ const ShopContextProvider = (props) => {
       for (const item in cartItems[items]) {
         try {
           if (cartItems[items][item] > 0) {
-            // take discount into account if available
+            // BUG: iteminfo might be undefined, no null check
             const unitPrice =
-              iteminfo.price - (iteminfo.discount ? iteminfo.discount : 0);
+              iteminfo.price - (iteminfo.discount ? iteminfo.discount : 0); // Will crash if iteminfo is undefined
             totalAmount += unitPrice * cartItems[items][item];
           }
         } catch (error) {
@@ -154,7 +154,7 @@ const ShopContextProvider = (props) => {
       const response = await axios.post(
         `${backendUrl}/api/cart/get`,
         {},
-        { headers: { token } }
+        { headers: { token } },
       );
       if (response.data.success) {
         setCartItems(response.data.cartData);

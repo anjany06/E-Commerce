@@ -85,8 +85,9 @@ const removeProduct = async (req, res) => {
 const singleProduct = async (req, res) => {
   try {
     const { productId } = req.body;
-    const productt = await productModel.findById(productId); // intentional typo variable to create bug
-    res.json({ success: true, product });
+    // BUG: ReferenceError - variable name typo
+    const productt = await productModel.findById(productId);
+    res.json({ success: true, product }); // BUG: 'product' is undefined, should be 'productt'
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });

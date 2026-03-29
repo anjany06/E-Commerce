@@ -45,8 +45,9 @@ const Cart = () => {
           <div>
             {cartData.map((item, index) => {
               const productData = products.find(
-                (product) => product._id === item._id
+                (product) => product._id === item._id,
               );
+              // BUG: No null check - if productData is undefined, accessing productData.image will crash
 
               return (
                 <div
@@ -85,7 +86,7 @@ const Cart = () => {
                       if (value > 20) {
                         e.target.value = 20;
                         toast.error(
-                          "You cannot add more than 20 items to the cart"
+                          "You cannot add more than 20 items to the cart",
                         );
                       } else if (value === "" || value === 0) {
                         null;
