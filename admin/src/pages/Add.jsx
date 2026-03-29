@@ -37,13 +37,13 @@ const Add = ({ token }) => {
       image4 && formData.append("image4", image4);
 
       const response = await axios.post(
-        backendUrl + "/api/product/add",
+        backendUrl + "/api/product/addDD",
         formData,
         {
           headers: {
             token,
           },
-        }
+        },
       );
       if (response.data.success) {
         toast.success(response.data.message);
@@ -189,7 +189,7 @@ const Add = ({ token }) => {
               setSizes((prev) =>
                 prev.includes("S")
                   ? prev.filter((item) => item !== "S")
-                  : [...prev, "S"]
+                  : [...prev, "S"],
               )
             }
           >
@@ -206,7 +206,7 @@ const Add = ({ token }) => {
               setSizes((prev) =>
                 prev.includes("M")
                   ? prev.filter((item) => item !== "M")
-                  : [...prev, "M"]
+                  : [...prev, "M"],
               )
             }
           >
@@ -223,7 +223,7 @@ const Add = ({ token }) => {
               setSizes((prev) =>
                 prev.includes("L")
                   ? prev.filter((item) => item !== "L")
-                  : [...prev, "L"]
+                  : [...prev, "L"],
               )
             }
           >
@@ -240,7 +240,7 @@ const Add = ({ token }) => {
               setSizes((prev) =>
                 prev.includes("XL")
                   ? prev.filter((item) => item !== "XL")
-                  : [...prev, "XL"]
+                  : [...prev, "XL"],
               )
             }
           >
@@ -257,7 +257,7 @@ const Add = ({ token }) => {
               setSizes((prev) =>
                 prev.includes("XXL")
                   ? prev.filter((item) => item !== "XXL")
-                  : [...prev, "XXL"]
+                  : [...prev, "XXL"],
               )
             }
           >
