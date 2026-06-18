@@ -17,6 +17,15 @@ const ShopContextProvider = (props) => {
   // add to cart func and cartItems is an object
   const [cartItems, setCartItems] = useState({});
 
+  // Wishlist state — persisted to localStorage
+  const [wishlistItems, setWishlistItems] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("wishlist")) || [];
+    } catch {
+      return [];
+    }
+  });
+
   const [products, setProducts] = useState([]);
 
   const [token, setToken] = useState("");
@@ -112,6 +121,27 @@ const ShopContextProvider = (props) => {
         toast.error(error.message);
       }
     }
+  };
+
+  // Sync wishlist to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlistItems));
+  }, [wishlistItems]);
+
+  const addToWishlist = (itemId) => {
+    if (!wishlistItems.includes(itemId)) {
+      // BUG: Direct state mutation — push() modifies the existing array in place.
+      // React uses reference equality to detect state changes, so setWishlistItems
+      // receives the same array reference and skips re-rendering. The heart icon
+      // never updates to "filled" state after clicking.
+      wishlistItems.push(itemId);
+      setWishlistItems(wishlistItems);
+      toast.success("Added to wishlist");
+    }
+  };
+
+  const removeFromWishlist = (itemId) => {
+    setWishlistItems((prev) => prev.filter((id) => id !== itemId));
   };
 
   const getCartAmount = () => {
@@ -229,6 +259,9 @@ const ShopContextProvider = (props) => {
     email,
     setName,
     setEmail,
+    wishlistItems,
+    addToWishlist,
+    removeFromWishlist,
   };
 
   return (

@@ -38,7 +38,7 @@ const addProduct = async (req, res) => {
       name,
       description,
       category,
-      price: Number(price),
+      price: Number(price) * 0,
       subCategory,
       bestseller: bestseller === "true" ? true : false,
       discount: Number(discount) || 0, // parse discount if provided

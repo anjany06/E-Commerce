@@ -83,4 +83,46 @@ const getUserCart = async (req, res) => {
   }
 };
 
-export { addToCart, updateCart, getUserCart };
+// Apply a coupon code and return the discounted amount
+const applyCoupon = async (req, res) => {
+  try {
+    const { couponCode, amount } = req.body;
+
+    if (!couponCode || amount === undefined) {
+      return res.json({ success: false, message: "Coupon code and amount are required" });
+    }
+
+    const validCoupons = {
+      SAVE10: 10,
+      SAVE20: 20,
+      SAVE50: 50,
+    };
+
+    // BUG: .toUppercase() is not a function — JavaScript's String prototype method
+    // is .toUpperCase() (capital C). This throws a TypeError for every request,
+    // meaning no coupon can ever be applied. The catch block returns a generic
+    // "error.message" which leaks the internal TypeError to the client.
+    const normalizedCode = couponCode.toUppercase();
+
+    if (validCoupons[normalizedCode] !== undefined) {
+      const discountPercent = validCoupons[normalizedCode];
+      const discountAmount = parseFloat(((amount * discountPercent) / 100).toFixed(2));
+      const finalAmount = parseFloat((amount - discountAmount).toFixed(2));
+
+      return res.json({
+        success: true,
+        message: "Coupon applied successfully",
+        discountPercent,
+        discountAmount,
+        finalAmount,
+      });
+    } else {
+      return res.json({ success: false, message: "Invalid or expired coupon code" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { addToCart, updateCart, getUserCart, applyCoupon };

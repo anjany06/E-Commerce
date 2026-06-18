@@ -19,6 +19,7 @@ import Verify from "./pages/Verify";
 import Sale from "./pages/Sale";
 import { Analytics } from "@vercel/analytics/react";
 import MyProfile from "./pages/MyProfile";
+import Wishlist from "./pages/Wishlist";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/sale" element={<Sale />} />
+          <Route path="/wishlist" element={<Wishlist />} />
         </Routes>
         <Footer />
       </div>
