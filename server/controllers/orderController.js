@@ -206,6 +206,48 @@ const updateStatus = async (req, res) => {
   }
 };
 
+// Cancel an order — user-initiated
+const cancelOrder = async (req, res) => {
+  try {
+    const { orderId, userId } = req.body;
+
+    if (!orderId) {
+      return res.json({ success: false, message: "Order ID is required" });
+    }
+
+    const order = await orderModel.findById(orderId);
+
+    // BUG 1 (SECURITY): No authorization check — any authenticated user can cancel
+    // any order by guessing or knowing its orderId. There is no verification that
+    // order.userId matches the requesting userId.
+
+    if (!order) {
+      return res.json({ success: false, message: "Order not found" });
+    }
+
+    // BUG 2 (LOGIC): Status comparison is case-sensitive. The DB stores "Order Placed"
+    // but if the admin ever updates to "order placed" or "Order placed", this guard fails
+    // silently and the order gets cancelled regardless of its actual state.
+    if (order.status !== "Order Placed") {
+      return res.json({
+        success: false,
+        message: "Only orders with 'Order Placed' status can be cancelled",
+      });
+    }
+
+    await orderModel.findByIdAndUpdate(orderId, { status: "Cancelled" });
+
+    // BUG 3 (LOGIC): Cart is never restored after cancellation. The user's cartData
+    // was cleared when the order was placed, so the items are permanently lost.
+    // A proper implementation would restore cancelled items back to the cart.
+
+    res.json({ success: true, message: "Order Cancelled Successfully" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   placeOrder,
   placeOrderStripe,
@@ -215,4 +257,5 @@ export {
   updateStatus,
   verifyStripe,
   verifyRazorpay,
+  cancelOrder,
 };

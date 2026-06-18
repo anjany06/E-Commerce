@@ -26,6 +26,10 @@ const Orders = () => {
               (item["payment"] = order.payment),
               (item["paymentMethod"] = order.paymentMethod),
               (item["date"] = order.date),
+              // BUG: Stored as "orderID" (capital ID) but accessed as "orderId" (lowercase d)
+              // in handleCancelOrder, so the cancel API always receives orderId: undefined,
+              // causing the server to silently fail or cancel an unintended document.
+              (item["orderID"] = order._id),
               allOrdersItem.push(item);
           });
         });
@@ -33,6 +37,27 @@ const Orders = () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      // BUG: orderId here is always undefined because the field was stored as
+      // item["orderID"] above but we pass item.orderId (lowercase d) from the JSX below.
+      const response = await axios.post(
+        `${backendUrl}/api/order/cancel`,
+        { orderId },
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        toast.success("Order cancelled successfully");
+        loadOrderData();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to cancel order");
     }
   };
 
@@ -81,17 +106,31 @@ const Orders = () => {
                 </p>
               </div>
             </div>
-            <div className="md:w-1/2 flex justify-between">
+            <div className="md:w-1/2 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <p className="min-w-2 h-2 rounded-full bg-green-500"></p>
+                <p
+                  className={`min-w-2 h-2 rounded-full ${
+                    item.status === "Cancelled" ? "bg-red-500" : "bg-green-500"
+                  }`}
+                ></p>
                 <p className="text-sm md:text-base">{item.status}</p>
               </div>
-              <button
-                onClick={loadOrderData}
-                className="border px-4 py-2 text-sm font-medium rounded-sm"
-              >
-                Track Order
-              </button>
+              <div className="flex gap-2">
+                {item.status === "Order Placed" && (
+                  <button
+                    onClick={() => handleCancelOrder(item.orderId)}
+                    className="border px-4 py-2 text-sm font-medium rounded-sm text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  onClick={loadOrderData}
+                  className="border px-4 py-2 text-sm font-medium rounded-sm"
+                >
+                  Track Order
+                </button>
+              </div>
             </div>
           </div>
         ))

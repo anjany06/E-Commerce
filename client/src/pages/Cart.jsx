@@ -4,11 +4,54 @@ import Title from "../components/Title";
 import assets from "../assets/assets/frontend_assets/assets";
 import CartTotal from "../components/CartTotal";
 import { toast } from "react-toastify";
+import axios from "axios";
 const Cart = () => {
-  const { products, currency, cartItems, updateQuantity, navigate } =
+  const { products, currency, cartItems, updateQuantity, navigate, backendUrl, token, getCartAmount, delivery_fee } =
     useContext(ShopContext);
 
   const [cartData, setCartData] = useState([]);
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponApplied, setCouponApplied] = useState(false);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+    if (couponApplied) {
+      toast.info("A coupon is already applied");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/cart/coupon`,
+        { couponCode, amount: getCartAmount() },
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        // BUG: discount is applied to the CartTotal display only via local state.
+        // getCartAmount() in ShopContext is never updated, so PlaceOrder.jsx still
+        // sends the full un-discounted amount to the server. Customers get the
+        // discount visually but pay full price.
+        setDiscount(response.data.discountAmount);
+        setCouponApplied(true);
+        toast.success(`Coupon applied! You save ${currency}${response.data.discountAmount.toFixed(2)}`);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to apply coupon");
+    }
+  };
+
+  const removeCoupon = () => {
+    setDiscount(0);
+    setCouponCode("");
+    setCouponApplied(false);
+    toast.info("Coupon removed");
+  };
 
   useEffect(() => {
     if (products.length > 0) {
@@ -107,6 +150,47 @@ const Cart = () => {
           </div>
           <div className="flex justify-end my-20">
             <div className="w-full sm:w-[450px]">
+              {/* Coupon Code Section */}
+              <div className="border rounded p-4 mb-4">
+                <p className="text-sm font-medium mb-3">HAVE A COUPON?</p>
+                {couponApplied ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded px-3 py-2">
+                    <div>
+                      <p className="text-sm text-green-700 font-medium">{couponCode.toUpperCase()} applied</p>
+                      <p className="text-xs text-green-600">You save {currency}{discount.toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={removeCoupon}
+                      className="text-xs text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code"
+                      className="border flex-1 px-3 py-2 text-sm"
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      className="bg-black text-white px-4 py-2 text-sm"
+                    >
+                      APPLY
+                    </button>
+                  </div>
+                )}
+                {discount > 0 && (
+                  <div className="mt-3 flex justify-between text-sm text-green-600">
+                    <span>Discount</span>
+                    <span>- {currency}{discount.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+
               <CartTotal />
               <div className="w-full text-end ">
                 <button
